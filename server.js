@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express();
 const mongoose = require("mongoose");
+const axios = require("axios");
+var bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 mongoose.connect(
   "mongodb+srv://subsafe:subsafe@cluster0.2awjl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -42,37 +46,44 @@ const newUserModel = new mongoose.model("user", userSchema)
 // model for orgs
 const newOrgModel = new mongoose.model("org", orgSchema)
 
-const userAdmin = new newUserModel({
-  id: 1,
-  username: "Mayur",
-  email: "msamrutwar9@gmail.com",
-  password: "abcdefg",
-  transactionDetails: [
-    { transactionID: "NETFLIX123", transactionAmount: 1000 },
-    { transactionID: "SPOTIFY123", transactionAmount: 100 },
-    { transactionID: "OTHER123", transactionAmount: 500 },
-  ],
-  bankDetails: [
-    {bankName: "",
-    accNumber: 0,
-  }
-  ]
-});
+// const userAdmin = new newUserModel({
+//   id: 1,
+//   username: "Mayur",
+//   email: "msamrutwar9@gmail.com",
+//   password: "abcdefg",
+//   transactionDetails: [
+//     { transactionID: "NETFLIX123", transactionAmount: 1000 },
+//     { transactionID: "SPOTIFY123", transactionAmount: 100 },
+//     { transactionID: "OTHER123", transactionAmount: 500 },
+//   ],
+//   bankDetails: [
+//     {bankName: "",
+//     accNumber: 0,
+//   }
+//   ]
+// });
 
-userAdmin.save().then(()=>console.log(userAdmin))
+// userAdmin.save().then(()=>console.log(userAdmin))
     
 // GET requests
 
 
 // get user data
 
-app.get("/user/:userEmail", (req, res)=>{
-  
+app.get("/api", (req, res)=>{
+  res.json({msg: "success"});
+})
+
+app.get("/user/:a", (req, res)=>{
+  // const email = req.params.useremail;
+  // res.json({msg: req.params.a});
+  newUserModel.find({email: req.params.a}, (err, user)=>{
+    res.json({msg: user});
+  })
 })
 
 
 app.get("/api/ngo", (req, res) => {})
-app.get("/api/ngo/:ngoid", (req, res) => {});
 
 
 // POST requests
@@ -95,6 +106,36 @@ app.post("/api/neworg", (req, res) =>{
     }
   });
 })
+
+
+
+// 2. save new user
+
+app.post("/api/register", (req, res) => {
+
+  console.log(JSON.parse(req.body));
+  const userData = JSON.parse(req.body)
+console.log(JSON.parse(req.body).data);
+  const newUser = new newUserModel({
+    username: userData.data.userName,
+    email: userData.data.userEmail,
+    password: userData.data.userPassword,
+    transactionDetails: [
+      { transactionID: "NETFLIX123", transactionAmount: 1000 },
+      { transactionID: "SPOTIFY123", transactionAmount: 100 },
+      { transactionID: "OTHER123", transactionAmount: 500 },
+    ],
+    bankDetails: [{ bankName: "", accNumber: 0 }],
+  });
+
+  newUser.save(function (err) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(newUser);
+    }
+  });
+});
 
 
 
